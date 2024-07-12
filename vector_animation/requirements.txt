@@ -1,0 +1,4 @@
+pyserial==3.5
+websocket-client==1.5.1
+wirepod_vector_sdk==0.8.1
+
