@@ -47,8 +47,9 @@
 
 **Coming soon**
 
+In the meantime check out the ongoing youtube series here:
 
-
+[![Everything Is AWESOME](https://i.ytimg.com/vi/fHoTQWiJFe0/hqdefault.jpg?sqp=-oaymwE2CPYBEIoBSFXyq4qpAygIARUAAIhCGAFwAcABBvABAfgB_gmAAtAFigIMCAAQARhlIGUoZTAP&rs=AOn4CLAu9E-D9Esj_6qKSqrrpJXg9vi36g)](https://www.youtube.com/watch?v=OQMk-K9NM3w&list=PLhjBVq157J6p6ea1Z1D-D8fh4uDna5mnl "Everything Is AWESOME")
 
 <!-- GETTING STARTED -->
 ## Getting Started:
