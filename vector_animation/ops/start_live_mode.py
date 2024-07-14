@@ -44,7 +44,7 @@ class StartLiveMode(Operator):
                 or (
                     servo_animation.live_mode_method == LiveMode.METHOD_SOCKET
                     and servo_animation.socket_host != ""
-                ) or 
+                )
 
                 or (
                     servo_animation.live_mode_method == LiveMode.METHOD_VECTOR
@@ -72,7 +72,11 @@ class StartLiveMode(Operator):
             return self.open_socket(context)
             
         if self.method == LiveMode.METHOD_VECTOR:
-            return self.open_socket(context)
+            try:
+                return self.open_vector_conn(context)
+            except Exception as e:
+                self.report({'ERROR'}, f"Failed to open vector connection with {e}")
+
 
 
         self.report({'ERROR'}, "Unknown live mode method")
@@ -123,6 +127,29 @@ class StartLiveMode(Operator):
 
         self.register_handler()
         self.report({'INFO'}, f"Opened web socket connection with {socket_url}")
+
+        return {'FINISHED'}
+
+    def open_vector_conn(self, _context):
+        import anki_vector
+        from anki_vector.exceptions import VectorNotFoundException
+
+        try:
+
+            robot = anki_vector.Robot(ip=self.robot_ip)
+            robot.connect()
+            robot.behavior.say_text("Ready to go!")
+            robot.behavior.set_lift_height(0.7)
+
+        except VectorNotFoundException:
+            self.report({'ERROR'}, f"Failed to connect to vector at {self.robot_ip}")
+
+            return {'CANCELLED'}
+
+        LiveMode.set_connection(robot)
+
+        self.register_handler()
+        self.report({'INFO'}, f"Opened grpc connection with vector at {self.robot_ip}")
 
         return {'FINISHED'}
 

@@ -4,7 +4,7 @@ import time
 import math
 import bpy
 
-from ..utils.servo_settings import get_active_pose_bones
+from ..utils.servo_settings import get_active_pose_bones, convert_vector_range
 from ..utils.converter import calculate_position
 
 class LiveMode:
@@ -172,6 +172,10 @@ class LiveMode:
 
     @classmethod
     def send_position(cls, servo_id, position):
+
+        import anki_vector
+        from anki_vector.exceptions import VectorNotFoundException
+
         if position == cls._last_positions.get(servo_id):
             return
 
@@ -186,6 +190,8 @@ class LiveMode:
                 cls._connection.write(command)
             elif servo_animation.live_mode_method == LiveMode.METHOD_SOCKET:
                 cls._connection.send_binary(bytes(command))
+            elif servo_animation.live_mode_method == LiveMode.METHOD_VECTOR:
+                cls._connection.behavior.set_lift_height(convert_vector_range(command))   
 
             cls._last_positions[servo_id] = position
         except Exception:

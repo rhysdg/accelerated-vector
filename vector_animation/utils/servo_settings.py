@@ -36,3 +36,36 @@ def has_unique_servo_id(bone, scene):
             return False
 
     return True
+    
+
+def convert_vector_range(value, old_min=45, old_max=90, new_min=0, new_max=1):
+  """
+  Blender armature is converted to degrees
+  This function itercepts and converts to a 0-1 
+  range required for Vecor's lift
+
+  Args:
+      value: The value to be scaled.
+      old_min: The minimum value in the old range (default 45).
+      old_max: The maximum value in the old range (default 90).
+      new_min: The minimum value in the new range (default 0).
+      new_max: The maximum value in the new range (default 1).
+
+  Returns:
+      The scaled value within the new range.
+  """
+
+  if old_min >= old_max:
+    raise ValueError("old_min must be less than old_max")
+
+  if new_min >= new_max:
+    raise ValueError("new_min must be less than new_max")
+
+  old_range = old_max - old_min
+  new_range = new_max - new_min
+
+  relative_position = (value - old_min) / old_range
+  scaled_value = relative_position * new_range + new_min
+
+  return scaled_value
+
