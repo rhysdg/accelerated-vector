@@ -18,11 +18,10 @@ class StopLiveMode(Operator):
 
     @classmethod
     def unregister_handler(cls):
+        LiveMode.clear_cache()
+
         if bpy.app.handlers.frame_change_post.count(LiveMode.handler):
             bpy.app.handlers.frame_change_post.remove(LiveMode.handler)
-
-        if bpy.app.handlers.depsgraph_update_post.count(LiveMode.handler):
-            bpy.app.handlers.depsgraph_update_post.remove(LiveMode.handler)
 
     def execute(self, context):
         method = context.window_manager.servo_animation.live_mode_method

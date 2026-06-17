@@ -32,16 +32,38 @@ class MenuPanel(Panel):
         row.operator(ArduinoExport.bl_idname, text="Arduino (.h)")
         row.operator(JsonExport.bl_idname, text="JSON (.json)")
 
+    @staticmethod
+    def _has_servo_armature(context):
+        obj = context.object
+        if not obj or obj.type != 'ARMATURE':
+            return False
+        return any(
+            pbone.bone.servo_settings.active
+            for pbone in obj.pose.bones
+        )
+
     @classmethod
     def draw_live_mode(cls, context, layout, col):
         servo_animation = context.window_manager.servo_animation
         live_mode_is_connected = LiveMode.is_connected()
 
+        # Warn if no armature with active servo bones is selected.
+        armature_ok = cls._has_servo_armature(context)
+        if not armature_ok and not live_mode_is_connected:
+            box = col.box()
+            box.label(
+                text="No armature with servo settings selected",
+                icon="ERROR",
+            )
+            box.label(text="Open the Vector .blend and select it in Pose Mode")
+
         if live_mode_is_connected:
             col.operator(StopLiveMode.bl_idname,
                          text="Disconnect", depress=True)
         else:
-            col.operator(StartLiveMode.bl_idname, text="Connect")
+            row = col.row(align=True)
+            row.enabled = armature_ok
+            row.operator(StartLiveMode.bl_idname, text="Connect")
 
         col = layout.column(align=True)
         col.enabled = not live_mode_is_connected

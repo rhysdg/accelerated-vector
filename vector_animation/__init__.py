@@ -14,8 +14,8 @@ from .ops.calibrate_servo import CalibrateServo
 bl_info = {
     "name": "Export Animation as Servo Position Values",
     "author": "Tim Hendriks",
-    "version": (1, 4, 0),
-    "blender": (2, 90, 0),
+    "version": (2, 0, 0),
+    "blender": (5, 0, 0),
     "location": "Bone Properties > Servo Settings | File > Import-Export",
     "description": "Exports armature animations as servo position values.",
     "warning": "",
@@ -49,67 +49,47 @@ def menu_func_timeline(self, _):
 
 
 def register():
-    """
-    
-    try:
-        for cls in classes:
-            bpy.utils.register_class(cls)
-
-        bpy.types.Bone.servo_settings = bpy.props.PointerProperty(
-        type=BonePropertyGroup)
-        bpy.types.EditBone.servo_settings = bpy.props.PointerProperty(
-            type=BonePropertyGroup)
-        bpy.types.WindowManager.servo_animation = bpy.props.PointerProperty(
-            type=WindowManagerPropertyGroup)
-        bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
-        bpy.types.TIME_MT_editor_menus.append(menu_func_timeline)
-    except Exception as e:
-        print(e)
-        unregister()
-
-    """
-
+    # Unregister any stale state so re-enabling doesn't error
+    unregister()
 
     for cls in classes:
         bpy.utils.register_class(cls)
 
     bpy.types.Bone.servo_settings = bpy.props.PointerProperty(
-    type=BonePropertyGroup)
+        type=BonePropertyGroup)
     bpy.types.EditBone.servo_settings = bpy.props.PointerProperty(
         type=BonePropertyGroup)
     bpy.types.WindowManager.servo_animation = bpy.props.PointerProperty(
         type=WindowManagerPropertyGroup)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
-    bpy.types.TIME_MT_editor_menus.append(menu_func_timeline)
-  
-    
+    bpy.types.DOPESHEET_MT_editor_menus.append(menu_func_timeline)
 
 
 def unregister():
+    try:
+        bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
+    except (ValueError, AttributeError):
+        pass
+    try:
+        bpy.types.DOPESHEET_MT_editor_menus.remove(menu_func_timeline)
+    except (ValueError, AttributeError):
+        pass
 
-    """
-    for cls in classes:
-        try:
-            bpy.utils.unregister_class(cls)
-        except Exception:
-            pass
     try:
         del bpy.types.Bone.servo_settings
-        del bpy.types.EditBone.servo_settings
-        del bpy.types.WindowManager.servo_animation
-        bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
-        bpy.types.TIME_MT_editor_menus.remove(menu_func_timeline)
-    except AttributeError:
+    except (AttributeError, KeyError):
         pass
-    """
+    try:
+        del bpy.types.EditBone.servo_settings
+    except (AttributeError, KeyError):
+        pass
+    try:
+        del bpy.types.WindowManager.servo_animation
+    except (AttributeError, KeyError):
+        pass
 
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
-  
-
-    del bpy.types.Bone.servo_settings
-    del bpy.types.EditBone.servo_settings
-    del bpy.types.WindowManager.servo_animation
-    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
-    bpy.types.TIME_MT_editor_menus.remove(menu_func_timeline)
-    
+    for cls in reversed(classes):
+        try:
+            bpy.utils.unregister_class(cls)
+        except (ValueError, RuntimeError):
+            pass

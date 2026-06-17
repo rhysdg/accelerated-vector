@@ -33,32 +33,26 @@ class StartLiveMode(Operator):
     def poll(cls, context):
         servo_animation = context.window_manager.servo_animation
 
-        return (
-            InstallDependencies.installed()
-            and not LiveMode.is_connected()
-            and (
-                (
-                    servo_animation.live_mode_method == LiveMode.METHOD_SERIAL
-                    and servo_animation.serial_port != "NONE"
-                )
-                or (
-                    servo_animation.live_mode_method == LiveMode.METHOD_SOCKET
-                    and servo_animation.socket_host != ""
-                )
+        if not InstallDependencies.installed():
+            return False
+        if LiveMode.is_connected():
+            return False
+        if bpy.app.background:
+            return True
 
-                or (
-                    servo_animation.live_mode_method == LiveMode.METHOD_VECTOR
-                    and servo_animation.robot_ip != ""
-                ) or 
-                
-                bpy.app.background
-            )
-        )
+        if servo_animation.live_mode_method == LiveMode.METHOD_SERIAL:
+            return servo_animation.serial_port != "NONE"
+        if servo_animation.live_mode_method == LiveMode.METHOD_SOCKET:
+            return servo_animation.socket_host != ""
+        if servo_animation.live_mode_method == LiveMode.METHOD_VECTOR:
+            return servo_animation.robot_ip != ""
+
+        return False
 
     @classmethod
     def register_handler(cls):
+        LiveMode.cache_pose_bones()
         bpy.app.handlers.frame_change_post.append(LiveMode.handler)
-        bpy.app.handlers.depsgraph_update_post.append(LiveMode.handler)
         LiveMode.handler(bpy.context.scene, None)
 
     def execute(self, context):

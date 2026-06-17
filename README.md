@@ -51,6 +51,37 @@ In the meantime check out the ongoing youtube series here:
 
 [![Everything Is AWESOME](https://i.ytimg.com/vi/fHoTQWiJFe0/hqdefault.jpg?sqp=-oaymwE2CPYBEIoBSFXyq4qpAygIARUAAIhCGAFwAcABBvABAfgB_gmAAtAFigIMCAAQARhlIGUoZTAP&rs=AOn4CLAu9E-D9Esj_6qKSqrrpJXg9vi36g)](https://www.youtube.com/watch?v=OQMk-K9NM3w&list=PLhjBVq157J6p6ea1Z1D-D8fh4uDna5mnl "Everything Is AWESOME")
 
+<!-- INSTALLATION -->
+## Installation
+
+The Blender addon lives in the `vector_animation/` directory. Two ways to install:
+
+### Option 1: Symlink (development)
+
+Link the addon folder into Blender's user addons directory so changes are picked up immediately:
+
+```bash
+# Blender 5.x (adjust version number as needed)
+mkdir -p ~/.config/blender/5.1/scripts/addons
+ln -s /absolute/path/to/accelerated-vector/vector_animation \
+      ~/.config/blender/5.1/scripts/addons/vector_animation
+```
+
+Then in Blender: **Edit → Preferences → Add-ons** → search for *"Servo"* → enable the checkbox.
+
+After editing any addon file, reload scripts with <kbd>F3</kbd> → *"Reload Scripts"* or disable/re-enable the addon in Preferences.
+
+### Option 2: Zip (distribution)
+
+Zip the addon folder and install through Blender's Preferences:
+
+```bash
+cd /path/to/accelerated-vector
+zip -r vector_animation.zip vector_animation/
+```
+
+Then in Blender: **Edit → Preferences → Add-ons → Install from Disk…** → select `vector_animation.zip` → enable the checkbox.
+
 <!-- GETTING STARTED -->
 ## Getting Started:
 
