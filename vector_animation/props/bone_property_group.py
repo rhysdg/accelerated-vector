@@ -5,18 +5,21 @@ from ..utils.servo_settings import range_limit_value
 
 
 def update_position_min(self, _context):
-    self.position_min = range_limit_value(
-        self.position_min, None, self.position_max)
+    clamped = range_limit_value(self.position_min, None, self.position_max)
+    if clamped != self.position_min:
+        self.position_min = clamped
 
 
 def update_position_max(self, _context):
-    self.position_max = range_limit_value(
-        self.position_max, self.position_min, None)
+    clamped = range_limit_value(self.position_max, self.position_min, None)
+    if clamped != self.position_max:
+        self.position_max = clamped
 
 
 def update_neutral_angle(self, _context):
-    self.neutral_angle = range_limit_value(
-        self.neutral_angle, None, self.rotation_range)
+    clamped = range_limit_value(self.neutral_angle, None, self.rotation_range)
+    if clamped != self.neutral_angle:
+        self.neutral_angle = clamped
 
 
 class BonePropertyGroup(PropertyGroup):
@@ -102,5 +105,17 @@ class BonePropertyGroup(PropertyGroup):
             ('0', 'X', "X Euler rotation axis"),
             ('1', 'Y', "Y Euler rotation axis"),
             ('2', 'Z', "Z Euler rotation axis")
+        ]
+    )
+    vector_motor: bpy.props.EnumProperty(
+        name="Vector Motor",
+        description="Which Vector motor this bone controls (Vector SDK mode only)",
+        default='LIFT',
+        items=[
+            ('LIFT', "Lift", "Lift arm — set_lift_height()"),
+            ('HEAD', "Head", "Head pitch — set_head_angle()"),
+            ('LEFT_WHEEL', "Left Wheel", "Left tread speed"),
+            ('RIGHT_WHEEL', "Right Wheel", "Right tread speed"),
+            ('BODY_TURN', "Body Turn", "Turn in place"),
         ]
     )

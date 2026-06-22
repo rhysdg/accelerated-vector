@@ -70,9 +70,23 @@ def matrix_visual(pose_bone):
     return mat_bone_inv @ mat_parent_bone @ mat_parent_pose_inv @ pose_bone.matrix
 
 
-def calculate_position(pose_bone, precision):
+def calculate_position(pose_bone, precision, armature_world=None, rest_world=None):
+    """Convert a pose bone's rotation to a servo position value.
+
+    If *armature_world* and *rest_world* are provided, the delta rotation
+    (current armature world × inverse of rest) is used — this correctly
+    picks up Object‑Mode keyframes on single‑bone armatures regardless
+    of which Euler axis the animator rotates on.
+    """
     servo_settings = pose_bone.bone.servo_settings
-    rotation_euler = matrix_visual(pose_bone).to_euler()
+
+    if armature_world is not None and rest_world is not None:
+        # Delta from rest = current_world × rest⁻¹
+        delta_mat = armature_world @ rest_world.inverted()
+        rotation_euler = delta_mat.to_euler()
+    else:
+        rotation_euler = matrix_visual(pose_bone).to_euler()
+
     rotation_axis_index = int(servo_settings.rotation_axis)
     rotation_in_degrees = round(math.degrees(
         rotation_euler[rotation_axis_index]) * servo_settings.multiplier, 2)
@@ -103,12 +117,20 @@ def calculate_positions(context, precision):
 
     positions = {}
     pose_bones = []
+    explicitly_enabled = False
 
     for pose_bone in context.object.pose.bones:
         servo_settings = pose_bone.bone.servo_settings
         if servo_settings.active:
             pose_bones.append(pose_bone)
             positions[servo_settings.servo_id] = []
+            explicitly_enabled = True
+
+    # Fall back to all bones if none are explicitly configured
+    if not explicitly_enabled:
+        for pose_bone in context.object.pose.bones:
+            pose_bones.append(pose_bone)
+            positions[pose_bone.bone.servo_settings.servo_id] = []
 
     if not pose_bones:
         return positions
@@ -126,7 +148,10 @@ def calculate_positions(context, precision):
 
         for pose_bone in pose_bones:
             bone = pose_bone.bone
-            position, _angle, in_range = calculate_position(pose_bone, precision)
+            arm_obj = pose_bone.id_data
+            position, _angle, in_range = calculate_position(
+                pose_bone, precision, armature_world=arm_obj.matrix_world,
+            )
 
             if not in_range:
                 clear_matrix_cache()

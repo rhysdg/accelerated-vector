@@ -51,15 +51,17 @@ class WindowManagerPropertyGroup(PropertyGroup):
         default="/"
     )
     robot_ip: bpy.props.StringProperty(
-        name="Vector ip address",
+        name="Wire-pod IP",
+        description="IP address of the Wire-pod server (not the robot)",
         default="192.168.0.190"
     )
     position_jump_handling: bpy.props.BoolProperty(
         name="Position Jump Handling",
         description=(
             "Slowly move the servos to their new position "
-            "when the position difference exceeds the threshold"
+            "when the position difference exceeds the threshold "
+            "(disable for Vector SDK — Vector handles smooth motion)"
         ),
-        default=True
+        default=False
     )
     

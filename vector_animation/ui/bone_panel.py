@@ -70,6 +70,7 @@ class BonePanel(Panel):
         col = layout.column()
         col.active = servo_settings.active
         col.prop(servo_settings, "servo_id")
+        col.prop(servo_settings, "vector_motor")
 
     def draw_current(self, context):
         layout = self.layout

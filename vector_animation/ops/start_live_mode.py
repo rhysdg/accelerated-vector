@@ -52,6 +52,7 @@ class StartLiveMode(Operator):
     @classmethod
     def register_handler(cls):
         LiveMode.cache_pose_bones()
+        LiveMode.start_worker()
         bpy.app.handlers.frame_change_post.append(LiveMode.handler)
         LiveMode.handler(bpy.context.scene, None)
 
@@ -129,21 +130,33 @@ class StartLiveMode(Operator):
         from anki_vector.exceptions import VectorNotFoundException
 
         try:
-
             robot = anki_vector.Robot(ip=self.robot_ip)
             robot.connect()
-            robot.behavior.say_text("Ready to go!")
+            # _return_future=True makes say_text non-blocking so we can
+            # raise the lift while the robot is still speaking.
+            robot.behavior.say_text("Ready to animate!", _return_future=True)
+            # Raise lift while robot is speaking, then drop to neutral after
             robot.behavior.set_lift_height(0.7)
+            robot.behavior.set_lift_height(0.0)
+            robot.behavior.set_head_angle(anki_vector.util.degrees(0))
 
         except VectorNotFoundException:
-            self.report({'ERROR'}, f"Failed to connect to vector at {self.robot_ip}")
+            self.report({'ERROR'}, f"Failed to connect to Wire-pod at {self.robot_ip}")
 
             return {'CANCELLED'}
 
         LiveMode.set_connection(robot)
 
         self.register_handler()
-        self.report({'INFO'}, f"Opened grpc connection with vector at {self.robot_ip}")
+        # Ensure robot is in neutral stance after handler starts (handler's
+        # first frame read may override the connect-time neutral position).
+        try:
+            import anki_vector.util as vector_util
+            robot.behavior.set_lift_height(0.0)
+            robot.behavior.set_head_angle(vector_util.degrees(0))
+        except Exception:
+            pass
+        self.report({'INFO'}, f"Connected to Wire-pod at {self.robot_ip}")
 
         return {'FINISHED'}
 

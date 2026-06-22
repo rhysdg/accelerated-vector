@@ -10,7 +10,7 @@ from ..utils.live_mode import LiveMode
 class MenuPanel(Panel):
     bl_label = "Servo Positions"
     bl_idname = "TIMELINE_PT_servo"
-    bl_space_type = 'SEQUENCE_EDITOR'
+    bl_space_type = 'DOPESHEET_EDITOR'
     bl_region_type = 'HEADER'
 
     def draw(self, context):
@@ -33,29 +33,27 @@ class MenuPanel(Panel):
         row.operator(JsonExport.bl_idname, text="JSON (.json)")
 
     @staticmethod
-    def _has_servo_armature(context):
+    def _armature_status(context):
+        """Return a (ok, message) tuple describing the armature selection state."""
         obj = context.object
-        if not obj or obj.type != 'ARMATURE':
-            return False
-        return any(
-            pbone.bone.servo_settings.active
-            for pbone in obj.pose.bones
-        )
+        if not obj:
+            return False, "No active object — select the Vector armature"
+        if obj.type != 'ARMATURE':
+            return False, f"Active object is '{obj.name}' (not an armature)"
+        if not obj.pose.bones:
+            return False, f"Armature '{obj.name}' has no bones"
+        return True, ""
 
     @classmethod
     def draw_live_mode(cls, context, layout, col):
         servo_animation = context.window_manager.servo_animation
         live_mode_is_connected = LiveMode.is_connected()
 
-        # Warn if no armature with active servo bones is selected.
-        armature_ok = cls._has_servo_armature(context)
+        # Warn if no valid armature is selected.
+        armature_ok, status_msg = cls._armature_status(context)
         if not armature_ok and not live_mode_is_connected:
             box = col.box()
-            box.label(
-                text="No armature with servo settings selected",
-                icon="ERROR",
-            )
-            box.label(text="Open the Vector .blend and select it in Pose Mode")
+            box.label(text=status_msg, icon="ERROR")
 
         if live_mode_is_connected:
             col.operator(StopLiveMode.bl_idname,
