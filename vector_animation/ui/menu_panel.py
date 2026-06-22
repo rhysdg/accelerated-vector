@@ -87,6 +87,7 @@ class MenuPanel(Panel):
 
         col = layout.column()
         col.prop(servo_animation, "position_jump_handling")
+        col.prop(servo_animation, "mute_on_connect")
 
     @classmethod
     def draw_live_mode_deps(cls, col):

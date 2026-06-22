@@ -708,7 +708,9 @@ class LiveMode:
 
         if cls._connection:
             if method == LiveMode.METHOD_VECTOR:
-                cls._connection.behavior.say_text("bye bye!")
+                mute = bpy.context.window_manager.servo_animation.mute_on_connect
+                if not mute:
+                    cls._connection.behavior.say_text("bye bye!")
                 cls._connection.disconnect()
             else:
                 cls._connection.close()

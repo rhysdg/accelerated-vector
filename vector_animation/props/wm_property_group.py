@@ -64,4 +64,12 @@ class WindowManagerPropertyGroup(PropertyGroup):
         ),
         default=False
     )
+    mute_on_connect: bpy.props.BoolProperty(
+        name="Mute on Connect",
+        description=(
+            "Suppress voice notifications from the robot on "
+            "connect ('Ready to animate!') and disconnect ('bye bye!')"
+        ),
+        default=False
+    )
     

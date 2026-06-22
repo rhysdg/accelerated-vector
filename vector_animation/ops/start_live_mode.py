@@ -125,7 +125,7 @@ class StartLiveMode(Operator):
 
         return {'FINISHED'}
 
-    def open_vector_conn(self, _context):
+    def open_vector_conn(self, context):
         import anki_vector
         from anki_vector.exceptions import VectorNotFoundException
 
@@ -134,7 +134,9 @@ class StartLiveMode(Operator):
             robot.connect()
             # _return_future=True makes say_text non-blocking so we can
             # raise the lift while the robot is still speaking.
-            robot.behavior.say_text("Ready to animate!", _return_future=True)
+            mute = context.window_manager.servo_animation.mute_on_connect
+            if not mute:
+                robot.behavior.say_text("Ready to animate!", _return_future=True)
             # Raise lift while robot is speaking, then drop to neutral after
             robot.behavior.set_lift_height(0.7)
             robot.behavior.set_lift_height(0.0)
