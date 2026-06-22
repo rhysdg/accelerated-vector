@@ -1,18 +1,18 @@
 def get_active_pose_bones(scene):
     pose_bones = []
-    explicitly_enabled = False
 
     for obj in scene.objects:
         if obj.type != "ARMATURE":
             continue
 
+        arm_has_active = False
         for pose_bone in obj.pose.bones:
             if pose_bone.bone.servo_settings.active:
                 pose_bones.append(pose_bone)
-                explicitly_enabled = True
+                arm_has_active = True
 
         # If no bones were explicitly enabled on this armature, include them all
-        if not explicitly_enabled:
+        if not arm_has_active:
             for pose_bone in obj.pose.bones:
                 pose_bones.append(pose_bone)
 

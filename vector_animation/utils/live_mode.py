@@ -170,7 +170,13 @@ class LiveMode:
                     if arm_rest is None:
                         continue
 
-                    delta_mat = arm_obj.matrix_world @ arm_rest.inverted()
+                    # Compute the bone's world-space rotation delta from rest,
+                    # which captures both object-level armature animation
+                    # (e.g. Lift armature rotates in world) AND bone-level pose
+                    # animation (e.g. Head bone rotates in pose mode).
+                    bone_rest_world = arm_rest @ pbone.bone.matrix_local
+                    bone_current_world = arm_obj.matrix_world @ pbone.matrix
+                    delta_mat = bone_current_world @ bone_rest_world.inverted()
                     euler = delta_mat.to_euler()
 
                     entry = raw[motor][pbone.name]
@@ -436,7 +442,13 @@ class LiveMode:
                 if arm_rest is None:
                     continue
 
-                delta_mat = arm_obj.matrix_world @ arm_rest.inverted()
+                # Compute the bone's world-space rotation delta from rest,
+                # which captures both object-level armature animation
+                # (e.g. Lift armature rotates in world) AND bone-level pose
+                # animation (e.g. Head bone rotates in pose mode).
+                bone_rest_world = arm_rest @ pbone.bone.matrix_local
+                bone_current_world = arm_obj.matrix_world @ pbone.matrix
+                delta_mat = bone_current_world @ bone_rest_world.inverted()
                 euler = delta_mat.to_euler()
                 deg = math.degrees(euler[cal['axis']])
 
