@@ -60,6 +60,9 @@ class LiveMode:
     # Without this, 30fps playback floods the SDK with cancel+restart calls
     # that cause hard jumps instead of smooth motion.
     _motor_last_dispatch = {}
+    # Keep references to SDK action futures so they don't get garbage
+    # collected (which cancels the underlying action before it completes).
+    _action_futures = {}
     # Minimum seconds between dispatches per motor (Vector mode).
     # 0.15 s = ~6.7 Hz per motor — enough for smooth motion without
     # flooding the action queue.
@@ -238,6 +241,7 @@ class LiveMode:
         cls._armature_rest.clear()
         cls._vector_calibration.clear()
         cls._motor_last_dispatch.clear()
+        cls._action_futures.clear()
         cls._handler_skip_first = False
         with cls._send_lock:
             cls._pending.clear()
@@ -625,16 +629,23 @@ class LiveMode:
 
         try:
             if motor_type == 'LIFT':
-                behavior.set_lift_height(norm, _return_future=True)
+                cls._action_futures[motor_type] = behavior.set_lift_height(norm, _return_future=True)
 
             elif motor_type == 'HEAD':
-                angle_deg = cls._range_map(norm, 0.0, 1.0, -45.0, 45.0)
-                behavior.set_head_angle(vector_util.Angle(degrees=angle_deg), _return_future=True)
+                # Robot head range is -22° (down) to +45° (up).
+                # In the Blender rig, the head at rest (delta=0°, Y=90°)
+                # visually looks UP, and at max (delta=-45°, Y=45°)
+                # visually looks FORWARD.  So map:
+                #   animation UP      (norm=0, delta=-45°) → robot FORWARD (0°)
+                #   animation NEUTRAL (norm=1, delta=0°)   → robot UP      (45°)
+                angle_deg = cls._range_map(norm, 0.0, 1.0, 0.0, 45.0)
+                cls._action_futures[motor_type] = behavior.set_head_angle(
+                    vector_util.Angle(degrees=angle_deg), _return_future=True)
 
             elif motor_type == 'LEFT_WHEEL':
                 speed = cls._range_map(norm, 0.0, 1.0, -500.0, 500.0)
                 right_speed = cls._last_positions.get('motor:RIGHT_WHEEL', 0.0)
-                motors.set_wheel_motors(
+                cls._action_futures[motor_type] = motors.set_wheel_motors(
                     round(speed), round(right_speed),
                     round(speed * 0.5), round(right_speed * 0.5),
                     _return_future=True,
@@ -643,7 +654,7 @@ class LiveMode:
             elif motor_type == 'RIGHT_WHEEL':
                 speed = cls._range_map(norm, 0.0, 1.0, -500.0, 500.0)
                 left_speed = cls._last_positions.get('motor:LEFT_WHEEL', 0.0)
-                motors.set_wheel_motors(
+                cls._action_futures[motor_type] = motors.set_wheel_motors(
                     round(left_speed), round(speed),
                     round(left_speed * 0.5), round(speed * 0.5),
                     _return_future=True,
@@ -651,7 +662,8 @@ class LiveMode:
 
             elif motor_type == 'BODY_TURN':
                 angle_deg = cls._range_map(norm, 0.0, 1.0, -180.0, 180.0)
-                behavior.turn_in_place(vector_util.Angle(degrees=angle_deg), _return_future=True)
+                cls._action_futures[motor_type] = behavior.turn_in_place(
+                    vector_util.Angle(degrees=angle_deg), _return_future=True)
 
             cls._last_positions[key] = position
             return True

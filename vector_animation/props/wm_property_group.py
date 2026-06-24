@@ -5,6 +5,21 @@ from ..ops.start_live_mode import StartLiveMode
 from ..utils.live_mode import LiveMode
 
 
+def _get_anim_items(self, context):
+    import json
+    items = []
+    try:
+        raw = context.window_manager.servo_animation.robot_anim_list_json
+        entries = json.loads(raw) if raw else []
+    except:
+        entries = []
+    for fname, label in entries:
+        items.append((fname, label, ""))
+    if not items:
+        items.append(("NONE", "No animations — click Refresh List", ""))
+    return items
+
+
 def get_serial_port_items(_self, _context):
     items = []
     ports = LiveMode.get_serial_ports()
@@ -71,5 +86,19 @@ class WindowManagerPropertyGroup(PropertyGroup):
             "connect ('Ready to animate!') and disconnect ('bye bye!')"
         ),
         default=False
+    )
+    robot_anim_list_json: bpy.props.StringProperty(
+        name="Animation List (JSON)",
+        description="Internal storage for fetched animation list",
+        default="[]"
+    )
+    robot_anim_count: bpy.props.IntProperty(
+        name="Animation Count",
+        default=0
+    )
+    robot_anim_select: bpy.props.EnumProperty(
+        name="Import Animation",
+        description="Select a .bin animation from the robot to import as keyframes",
+        items=_get_anim_items
     )
     

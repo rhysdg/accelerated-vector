@@ -5,6 +5,7 @@ from ..ops.stop_live_mode import StopLiveMode
 from ..ops.install_dependencies import InstallDependencies
 from ..ops.start_live_mode import StartLiveMode
 from ..utils.live_mode import LiveMode
+from ..ops.import_robot_anim import AnimOT_ToggleLPMeshes
 
 
 class MenuPanel(Panel):
@@ -85,9 +86,13 @@ class MenuPanel(Panel):
 
 
 
+
         col = layout.column()
         col.prop(servo_animation, "position_jump_handling")
         col.prop(servo_animation, "mute_on_connect")
+
+        col.separator()
+        col.operator(AnimOT_ToggleLPMeshes.bl_idname, text="Toggle LP Shell")
 
     @classmethod
     def draw_live_mode_deps(cls, col):

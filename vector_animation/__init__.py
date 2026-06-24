@@ -10,6 +10,7 @@ from .ops.stop_live_mode import StopLiveMode
 from .ops.install_dependencies import InstallDependencies
 from .ops.start_live_mode import StartLiveMode
 from .ops.calibrate_servo import CalibrateServo
+from .ops.import_robot_anim import (AnimOT_RefreshRobotAnims, AnimOT_ImportRobotAnim, AnimPT_RobotAnimPanel, AnimOT_ToggleLPMeshes)
 
 bl_info = {
     "name": "Export Animation as Servo Position Values",
@@ -35,7 +36,11 @@ classes = (
     StopLiveMode,
     StartLiveMode,
     InstallDependencies,
-    CalibrateServo
+    CalibrateServo,
+    AnimOT_RefreshRobotAnims,
+    AnimOT_ImportRobotAnim,
+    AnimOT_ToggleLPMeshes,
+    AnimPT_RobotAnimPanel,
 )
 
 
